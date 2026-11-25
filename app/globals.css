@@ -1,0 +1,253 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------
+   MOD WELLNESS — design tokens
+   Botanical-apothecary palette: deep moss + warm brass on
+   pale sand linen. Deliberately avoids the generic
+   cream+terracotta / near-black+neon defaults.
+--------------------------------------------------------- */
+
+:root {
+  --color-linen: #ffffff;
+  /* page background — pale sand, faint sage cast */
+  --color-linen-raised: #97cdee;
+  /* card / surface background, a touch lighter */
+  --color-ink: #201f19;
+  /* primary text — near-black warm brown */
+  --color-moss: #7b7def;
+  /* primary brand color — deep botanical green */
+  --color-moss-deep: #2c3425;
+  /* moss, pressed/hover state */
+  --color-sage: #6f7a5b;
+  /* secondary text, muted green */
+  --color-brass: #a9803e;
+  /* accent — warm brass/metal, used sparingly */
+  --color-stone: #bfc5d9;
+  /* hairlines, borders, dividers */
+
+  /* Luxury hero palette — scoped to the redesigned hero section and
+     the site nav (see globals.css hero-luxury-bg + Navbar.tsx). Kept
+     separate from the botanical tokens above so the rest of the site
+     is untouched. */
+  --color-charcoal: #1e252b;
+  /* premium dark text, hero + nav */
+  --color-gold: #636cef;
+  /* muted gold/champagne accent */
+  --color-ivory: #ffffff;
+  /* hero background base */
+
+  /* Chrome heights, used to size the Home hero against the real
+     viewport (see .hero-fit below). Keep these in sync with
+     Navbar's h-20 and AnnouncementBar's h-11 utility classes —
+     they're mirrored here as vars rather than measured at runtime
+     so the hero can size itself in pure CSS with no layout-shifting
+     JS measurement pass. */
+  --header-height: 5rem;
+  /* Navbar h-20 */
+  --announcement-height: 2.75rem;
+  /* AnnouncementBar h-11 */
+}
+
+@theme inline {
+  --color-linen: var(--color-linen);
+  --color-linen-raised: var(--color-linen-raised);
+  --color-ink: var(--color-ink);
+  --color-moss: var(--color-moss);
+  --color-moss-deep: var(--color-moss-deep);
+  --color-sage: var(--color-sage);
+  --color-brass: var(--color-brass);
+  --color-stone: var(--color-stone);
+  --color-charcoal: var(--color-charcoal);
+  --color-gold: var(--color-gold);
+  --color-ivory: var(--color-ivory);
+
+  --color-background: var(--color-linen);
+  --color-foreground: var(--color-ink);
+
+  --font-display: "Fraunces Variable", ui-serif, Georgia, serif;
+  --font-body: "Manrope Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-label: "IBM Plex Mono", ui-monospace, monospace;
+
+  --container-8xl: 90rem;
+}
+
+html,
+body {
+  width: 100%;
+  /* Global safety net against accidental horizontal scroll from
+     oversized images, transforms, or absolutely-positioned decor.
+     Fix overflow at its source first (see Hero/HeroBottle/Stone
+     sizing) — this is a backstop, not a substitute for that.
+
+     `clip` rather than `hidden`: setting overflow-x to anything but
+     `visible` while overflow-y stays `visible` forces the browser to
+     treat overflow-y as `auto` too (a well-known CSS side effect).
+     On html/body that silently turns the page into its own inner
+     scroll container instead of the viewport scrolling normally,
+     which breaks position:sticky (the pinned WellnessJourney panel),
+     GSAP ScrollTrigger, and the Lenis smooth-scroll sync. `clip`
+     blocks horizontal overflow the same way without that side
+     effect. The `hidden` line is a fallback for browsers predating
+     `overflow: clip` support (pre-2023 Safari); `clip` overrides it
+     in every modern browser via normal cascade order. */
+  overflow-x: hidden;
+  overflow-x: clip;
+}
+
+body {
+  background: var(--color-linen);
+  color: var(--color-ink);
+  font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+.font-display {
+  font-family: var(--font-display), ui-serif, Georgia, serif;
+}
+
+.font-label {
+  font-family: var(--font-label), ui-monospace, monospace;
+}
+
+/* Poppins — used exclusively by the premium hero section and the
+   site navigation (see components/home/Hero.tsx + layout/Navbar.tsx).
+   Loaded as static weight files in app/layout.tsx. */
+.font-poppins {
+  font-family: "Poppins", ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Soft luxury ivory/champagne backdrop for the redesigned hero.
+   Subtle radial glows over a warm linear base — deliberately avoids
+   a flat white or a generic blue-tinted gradient. */
+.hero-luxury-bg {
+  background-color: var(--color-ivory);
+}
+
+/* ---------------------------------------------------------
+   Home hero — viewport-fit system
+   Only kicks in at the lg breakpoint (1024px+, i.e. "standard
+   desktop/laptop"), which is where the "fits in one screen"
+   requirement applies. Below that, the hero stacks and uses its
+   normal Tailwind responsive classes untouched, so mobile/tablet
+   behavior is unaffected.
+
+   All three rules are written unlayered (same as .eyebrow /
+   .hero-luxury-bg above) so they win over the Tailwind utility
+   classes on the same elements regardless of source order.
+--------------------------------------------------------- */
+@media (min-width: 64rem) {
+  .hero-fit {
+    /* 100svh (small viewport height) rather than 100vh so mobile
+       browser chrome showing/hiding doesn't change this calc —
+       matters less at lg+ where chrome is fixed, but keeps the
+       value stable if this class is ever reused at a lower
+       breakpoint. */
+    min-height: calc(100svh - var(--header-height) - var(--announcement-height));
+  }
+
+  /* Fluid heading size: scales with both viewport width AND height,
+     so it shrinks on short-but-wide laptop screens (1366x768,
+     1280x720) as well as narrow ones, instead of only responding to
+     width like a normal Tailwind breakpoint would. */
+  .hero-heading-fluid {
+    font-size: clamp(2.75rem, 2.2vw + 2.6vh, 4.4rem);
+  }
+
+  /* Fluid bottle-zone height: same idea as the heading above, so the
+     product composition scales down on short laptop viewports
+     instead of forcing a scrollbar. Only the outer zone's height
+     changes here — HeroBottle's own width breakpoints (and the
+     matching clone in FloatingBottle.tsx) are left untouched, so the
+     scroll hand-off measurement stays accurate at every size. */
+  .hero-zone-fluid {
+    height: clamp(300px, 26vw + 14vh, 620px);
+  }
+}
+
+/* Eyebrow / label utility: tracked uppercase mono, used for
+   section kickers, nav caps, and meta data. */
+.eyebrow {
+  font-family: var(--font-label), ui-monospace, monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+/* Respect reduced-motion preferences site-wide */
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+::selection {
+  background: var(--color-moss);
+  color: var(--color-linen);
+}
+
+/* Hero bottle idle float — gentle bob + micro-rotation layered on
+   top of the base 30deg tilt applied inline via transform. */
+@keyframes bottle-float {
+  0% {
+    transform: rotate(30deg) translateY(0) rotateZ(0deg);
+  }
+
+  50% {
+    transform: rotate(30deg) translateY(-14px) rotateZ(2deg);
+  }
+
+  100% {
+    transform: rotate(30deg) translateY(0) rotateZ(0deg);
+  }
+}
+
+.animate-bottle-float {
+  animation: bottle-float 5s ease-in-out infinite;
+}
+
+/* Subtle "comes alive" entrance for the hero bottle zone on initial
+   load. Opacity-only, deliberately never touches transform: the
+   FloatingBottle scroll animation measures this element's rect on
+   mount, and a transform here (scale/translate) could throw that
+   measurement off mid-animation. Opacity has no effect on layout, so
+   it's safe to run independently of that system.
+   Automatically covered by the prefers-reduced-motion rule above. */
+@keyframes hero-bottle-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-hero-bottle-in {
+  animation: hero-bottle-in 1.1s ease-out both;
+}
+
+/* Lenis sets this class on <html> while a smooth scroll is running;
+   keeping the native scrollbar/behavior untouched here so it doesn't
+   fight with anchor jumps or browser back/forward scroll restoration. */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+html.lenis.lenis-smooth {
+  scroll-behavior: auto;
+}
